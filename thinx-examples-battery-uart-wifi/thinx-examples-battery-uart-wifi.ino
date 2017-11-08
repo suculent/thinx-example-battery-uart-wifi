@@ -127,6 +127,6 @@ void loop() {
     Serial.println(millis());
     initialized = false;
     registered = false;
-    ESP.deepSleep(3600e9); 
+    ESP.deepSleep(3600e6); 
   }      
 }
