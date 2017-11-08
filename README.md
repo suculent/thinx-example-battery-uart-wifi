@@ -11,6 +11,20 @@ THiNXLib example for ESP8266 in Arduino IDE.
 * Code: Enter your SSID/PASS for easy development kickstart
 * Build & run
 
+### THiNX CI Notes
+
+Edit the .board file to pass your settings to Arduino builder.
+
+Should fix error:
+
+```
+ note: in expansion of macro 'F_CPU'
+ 
+ #if F_CPU == FCPU80
+ 
+ error: token "{" is not valid in preprocessor expressions
+```
+
 ### Devices tested
 
 * Wemos D1 with TelekomDesign TD1208 SigFox
