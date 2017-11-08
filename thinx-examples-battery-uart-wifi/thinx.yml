@@ -6,3 +6,4 @@ arduino:
   libs:
     - ArduinoJSON
     - WiFiManager
+    - SoftwareSerial
