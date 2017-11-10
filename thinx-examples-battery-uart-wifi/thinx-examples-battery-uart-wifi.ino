@@ -42,8 +42,8 @@ void resetAutoSleep() {
 
 /* Called after library gets connected and registered */
 void finalizeCallback () {
-  Serial.println("Callback completed, falling asleep..");
-  ESP.deepSleep(3600e6); 
+  Serial.println("Callback completed, resetting autosleep to let MQTT happen...");
+  resetAutoSleep();
 }
 
 void setup() {  
