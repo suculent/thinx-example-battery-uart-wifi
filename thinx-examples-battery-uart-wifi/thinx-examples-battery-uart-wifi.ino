@@ -40,12 +40,10 @@ void resetAutoSleep() {
   sleepTime = millis() + 60 * 1000; // Will fall asleep in 60 secs to let the message get delivered...
 }
 
-
-bool finalized = false;
-
 /* Called after library gets connected and registered */
 void finalizeCallback () {
-  finalized = true;
+  Serial.println("Callback completed, falling asleep..");
+  ESP.deepSleep(3600e6); 
 }
 
 void setup() {  
@@ -60,11 +58,7 @@ void setup() {
   Serial.begin(9600);
   while (!Serial);
   Serial.println("\nI'm awake.");
-  Serial.setTimeout(2000);
-
-  // API Key, Owner ID
-  thx = THiNX("4721f08a6df1a36b8517f678768effa8b3f2e53a7a1934423c1f42758dd83db5", "cedc16bb6bb06daaa3ff6d30666d91aacd6e3efbf9abbc151b4dcade59af7c12");
-  thx.setFinalizeCallback(finalizeCallback);
+  Serial.setTimeout(2000);  
   
   
   Serial.println("Initializing Sigfox Serial...");
@@ -96,7 +90,16 @@ void setup() {
   
   Serial.print("Sending Sigfox command: ");  
   Sigfox.print("AT$SF=");
-  Sigfox.println(voltageString);  
+  Sigfox.println(voltageString);    
+
+  String statusString = String("Battery ") + String(voltage) + String("V");
+  Serial.print("*INO: Setting status: ");
+  Serial.println(statusString);
+
+  // API Key, Owner ID
+  thx = THiNX("4721f08a6df1a36b8517f678768effa8b3f2e53a7a1934423c1f42758dd83db5", "cedc16bb6bb06daaa3ff6d30666d91aacd6e3efbf9abbc151b4dcade59af7c12");
+  thx.setStatus(statusString); // should not make request until connected in first loop()
+  thx.setFinalizeCallback(finalizeCallback);  
 }
 
 void loop() {      
@@ -114,16 +117,7 @@ void loop() {
     Sigfox.write(Serial.read());
     resetAutoSleep();
   }
-
-  if (finalized) {
-    Serial.println("*INO: Finalize callback called.");
-    String statusString = String("Battery ") + String(voltage) + String("V");
-    Serial.print("*INO: Setting status: ");
-    Serial.println(statusString);
-    thx.setStatus(statusString);
-    finalized = false;
-  }
-
+  
   // autosleep requires connecting WAKE (D0?) and RST pin  
   if (millis() > sleepTime) {
     Serial.println("Going into deep sleep for 1 hour...");
