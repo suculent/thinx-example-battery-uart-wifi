@@ -41,13 +41,11 @@ void resetAutoSleep() {
 }
 
 
+bool finalized = false;
+
 /* Called after library gets connected and registered */
 void finalizeCallback () {
-  Serial.println("*INO: Finalize callback called.");
-  String statusString = String("Battery ") + String(voltage) + String("V");
-  Serial.print("*INO: Setting status: ");
-  Serial.println(statusString);
-  thx.setStatus(statusString);
+  finalized = true;
 }
 
 void setup() {  
@@ -98,11 +96,7 @@ void setup() {
   
   Serial.print("Sending Sigfox command: ");  
   Sigfox.print("AT$SF=");
-  Sigfox.println(voltageString);
-
-  String statusString = String("Battery ") + String(voltage) + String("V");
-  thx.setStatus(statusString); // additional!
-  
+  Sigfox.println(voltageString);  
 }
 
 void loop() {      
@@ -119,6 +113,15 @@ void loop() {
   if (Serial.available()) {
     Sigfox.write(Serial.read());
     resetAutoSleep();
+  }
+
+  if (finalized) {
+    Serial.println("*INO: Finalize callback called.");
+    String statusString = String("Battery ") + String(voltage) + String("V");
+    Serial.print("*INO: Setting status: ");
+    Serial.println(statusString);
+    thx.setStatus(statusString);
+    finalized = false;
   }
 
   // autosleep requires connecting WAKE (D0?) and RST pin  
