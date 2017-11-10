@@ -1,13 +1,13 @@
-#include "THiNXLib.h"
-
-#ifndef UNIT_TEST // IMPORTANT LINE FOR UNIT-TESTING!
-
 extern "C" {
   #include "user_interface.h"
   #include "thinx.h"
   #include <cont.h>
     extern cont_t g_cont;
 }
+
+#include "THiNXLib.h"
+
+#ifndef UNIT_TEST // IMPORTANT LINE FOR UNIT-TESTING!
 
 #ifndef THINX_FIRMWARE_VERSION_SHORT
 #define THINX_FIRMWARE_VERSION_SHORT VERSION
@@ -1179,11 +1179,8 @@ void THiNX::update_and_reboot(String url) {
 
     switch(ret) {
         case HTTP_UPDATE_FAILED:
-            Serial.printf("HTTP_UPDATE_FAILD Error (%d): %s", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str());
-            if (mqtt_client) {
-              String message = String("{ \"status\" : \"") + ESPhttpUpdate.getLastErrorString() + String("\" }");
-              mqtt_client->publish(mqtt_device_status_channel, message.c_str());
-            }
+            Serial.printf("HTTP_UPDATE_FAILED Error (%d): %s", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str());
+            setStatus(ESPhttpUpdate.getLastErrorString());
             break;
 
         case HTTP_UPDATE_NO_UPDATES:
@@ -1444,6 +1441,10 @@ void THiNX::setStatus(String newstatus) {
     statusString = newstatus;
     if (connected) {
         checkin();
+    }
+    if (mqtt_client) {
+        String message = String("{ \"status\" : \"") + newstatus + String("\" }");
+        mqtt_client->publish(mqtt_device_status_channel, message.c_str());
     }
 }
 
