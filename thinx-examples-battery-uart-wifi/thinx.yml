@@ -4,7 +4,7 @@ arduino:
   board: d1_mini
   flash_ld: eagle.flash.4m1m.ld
   f_cpu: 80
-  flash_size: 1M
+  flash_size: 4M
   libs:
     - ArduinoJSON
     - WiFiManager
