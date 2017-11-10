@@ -941,7 +941,7 @@ void THiNX::restore_device_info() {
     long data_len = 0;
 
     Serial.println(F("*TH: Restoring configuration from EEPROM..."));
-    
+
     json_output = "";
 
     for (long a = 0; a < buf_len; a++) {
@@ -1083,7 +1083,7 @@ void THiNX::save_device_info()
 #else
     Serial.println(F("*TH: saving configuration to EEPROM: "));
     json_info[512] = {0};
-    for (long addr = 0; addr <= strlen((const char*)json_info); addr++) {
+    for (long addr = 0; addr < strlen((const char*)json_info); addr++) {
         uint8_t byte = json_info[addr];
         EEPROM.put(addr, json_info[addr]);
         if (byte == 0) break;
@@ -1180,6 +1180,10 @@ void THiNX::update_and_reboot(String url) {
     switch(ret) {
         case HTTP_UPDATE_FAILED:
             Serial.printf("HTTP_UPDATE_FAILD Error (%d): %s", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str());
+            if (mqtt_client) {
+              String message = String("{ \"status\" : \"") + ESPhttpUpdate.getLastErrorString() + String("\" }");
+              mqtt_client->publish(mqtt_device_status_channel, message.c_str());
+            }
             break;
 
         case HTTP_UPDATE_NO_UPDATES:
