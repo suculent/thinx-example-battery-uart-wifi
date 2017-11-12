@@ -55,7 +55,7 @@ void setup() {
     delay(1);
   }; // wait for connection
   
-  Serial.begin(9600);
+  Serial.begin(115200);
   while (!Serial);
   Serial.println("\nI'm awake.");
   Serial.setTimeout(2000);  
@@ -95,6 +95,30 @@ void setup() {
   String statusString = String("Battery ") + String(voltage) + String("V");
   Serial.print("*INO: Setting status: ");
   Serial.println(statusString);
+
+  // TD1208 Sample Sigfox AT Commands
+  
+  /* 
+   *  Note: enable temperature monitoring by checking temperature level every hour. A Temperature Low event
+   *  will be emitted if the temperature level falls below 5°C, a temperature High Event will be emitted if 
+   *  the temperature level rises above 25°C and following any of the two previous event if the temperature 
+   *  level goes back into the authorized range a Temperature OK Event will be emitted.
+   */   
+   // Sigfox.println("ATS503=1,3600,5,25");
+
+   // Enable boot monitoring
+   // Sigfox.println("ATS507=1");   
+
+  // Write settings to flash
+   // Sigfox.println("AT&W");
+
+  // Module ID
+  //Serial.print("Module ID: ");
+   //Sigfox.println("ATI10");   
+  
+   // Module temperature
+   // Serial.print("Module temperature: ");
+   // Sigfox.println("ATI26");   
 
   // API Key, Owner ID
   thx = THiNX("4721f08a6df1a36b8517f678768effa8b3f2e53a7a1934423c1f42758dd83db5", "cedc16bb6bb06daaa3ff6d30666d91aacd6e3efbf9abbc151b4dcade59af7c12");
