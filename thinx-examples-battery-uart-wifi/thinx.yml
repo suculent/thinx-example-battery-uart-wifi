@@ -8,4 +8,4 @@ arduino:
   libs:
     - ArduinoJSON
     - WiFiManager
-    - SoftwareSerial
+    - EspSoftwareSerial
