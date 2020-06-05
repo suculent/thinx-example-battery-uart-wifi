@@ -1,15 +1,32 @@
 # THiNX Lib (ESP)
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/8dded023f3d14a69b3c38c9f5fd66a40)](https://www.codacy.com/app/suculent/thinx-lib-esp8266-arduinoc?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=suculent/thinx-lib-esp8266-arduinoc&amp;utm_campaign=Badge_Grade)
+[![Build Status](https://travis-ci.org/suculent/thinx-firmware-esp8266.svg)](https://travis-ci.org/suculent/thinx-firmware-esp8266)
 
 An Arduino/ESP8266 library to wrap client for OTA updates and RTM (Remote Things Management) based on THiNX platform.
 
 # What's New
 
-* Added example that combines THiNX with any other UART device (SigFox) for outage reporting with battery backup
-* Added possibility to set own status string on check-in
+### 2019-12-10: 2.8.238
 
-See changelog at the end for rest.
+* Compatibility with Arduino Core 2.6.2
+* Compatibility with ArduinoJSON 6.x (thus not included anymore)
+
+### 2019-09-24: 2.7.235
+
+* It's now possible to override `THiNX::thinx_mqtt_url` and `THiNX::thinx_cloud_url` from code, ignoring header values.
+
+### 2019-06-03: 2.7.231
+
+* Firmware returns MCU type to prevent brick by incorrect OTA build type (from thinx.yml file)
+
+### Older releases
+
+* Added Relay example with twin WiFi access variants.
+* Fixes and improved support for timezones. You can set timezone per device on the [RTM Console](https://rtm.thinx.cloud) and current DST will be applied on checkin, if applicable. It will be also used for the SNTP later.
+* HTTPS can be optionally disabled for faster checkins with `THiNX:forceHTTP = true` (speeds up checkin from 120 seconds to 2 seconds)
+* SHA-256 and MD5 firmware validation; currently the MD5 only is supported by ESPhttpUpdate (we're working with Arduino Core team on better implementation)
+* Added setCheckinInterval(long) and setRebootInterval(long) to allow heartbeat and timed restarts (defaults to 24h)
 
 # Usage
 
@@ -97,36 +114,34 @@ void finalizeCallback () {
 
 ```
 /* Example of using Environment variables */
-void pushConfigCallback (String config) {
+void pushConfigCallback (char *config) {
 
   // Convert incoming JSON string to Object
-  DynamicJsonBuffer jsonBuffer(512);
-  JsonObject& root = jsonBuffer.parseObject(config.c_str());
-  JsonObject& configuration = root["configuration"];
-
-  if ( !configuration.success() ) {
+  DynamicJsonDocument root(512);
+  auto error = deserializeJson(root, config);
+  if (error) {
     Serial.println(F("Failed parsing configuration."));
-  } else {
+    return;
+  }
 
-    // Parse and apply your Environment vars
-    const char *ssid = configuration["THINX_ENV_SSID"];
-    const char *pass = configuration["THINX_ENV_PASS"];
+  // Parse and apply your Environment vars
+  const char *ssid = root["configuration"]["THINX_ENV_SSID"];
+  const char *pass = root["configuration"]["THINX_ENV_PASS"];
 
-    // password may be empty string
-    if ((strlen(ssid) > 2) && (strlen(pass) > 0)) {
-      WiFi.disconnect();
-      WiFi.begin(ssid, pass);
-      long timeout = millis() + 20000;
-      Serial.println("Attempting WiFi migration...");
-      while (WiFi.status() != WL_CONNECTED) {
-        yield();
-        if (millis() > timeout) break;
-      }
-      if (WiFi.status() != WL_CONNECTED) {
-        Serial.println("WiFi migration failed."); // TODO: Notify using publish() to device status channel
-      } else {
-        Serial.println("WiFi migration successful."); // TODO: Notify using publish() to device status channel
-      }
+  // password may be empty string
+  if ((strlen(ssid) > 2) && (strlen(pass) > 0)) {
+    WiFi.disconnect();
+    WiFi.begin(ssid, pass);
+    unsigned long timeout = millis() + 20000;
+    Serial.println("Attempting WiFi migration...");
+    while (WiFi.status() != WL_CONNECTED) {
+      yield();
+      if (millis() > timeout) break;
+    }
+    if (WiFi.status() != WL_CONNECTED) {
+      Serial.println("WiFi migration failed."); // TODO: Notify using publish() to device status channel
+    } else {
+      Serial.println("WiFi migration successful."); // TODO: Notify using publish() to device status channel
     }
   }
 }
@@ -135,8 +150,5 @@ void pushConfigCallback (String config) {
 ### Location Support
 
 You can update your device's location aquired by WiFi library or GPS module using `thx.setLocation(double lat, double lon`) from version 2.0.103 (rev88).
+
 Device will be forced to checked in when you change those values.
-
-# Changelog
-
-4/11/2017 - 2.0.123 - added pushConfigCallback, public MQTT methods publishStatus(message) and publish(message, topic, retain), WiFi migration example; added support for finding and using thinx-connect proxy using MDNS
