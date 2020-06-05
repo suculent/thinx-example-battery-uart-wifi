@@ -6,6 +6,5 @@ arduino:
   f_cpu: 80000000L
   flash_size: 4M
   libs:
-    - ArduinoJSON
     - WiFiManager
     - EspSoftwareSerial
