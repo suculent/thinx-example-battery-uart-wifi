@@ -1138,7 +1138,10 @@ String THiNX::thinx_time(const char* optional_format) {
     format = strdup(optional_format);
   }
 
-  long stamp = THiNX::epoch();
+  // Must be time_t, not long: esp8266 core 3.x (newlib) defines time_t as
+  // long long, and localtime_r takes a const time_t*. Passing a long* fails
+  // with "cannot convert 'long int*' to 'const time_t*'".
+  time_t stamp = (time_t) THiNX::epoch();
   struct tm lt;
   char res[32];
   (void) localtime_r(&stamp, &lt);
@@ -1155,7 +1158,10 @@ String THiNX::thinx_date(const char* optional_format) {
     format = strdup(optional_format);
   }
 
-  long stamp = THiNX::epoch();
+  // Must be time_t, not long: esp8266 core 3.x (newlib) defines time_t as
+  // long long, and localtime_r takes a const time_t*. Passing a long* fails
+  // with "cannot convert 'long int*' to 'const time_t*'".
+  time_t stamp = (time_t) THiNX::epoch();
   struct tm lt;
   char res[32];
   (void) localtime_r(&stamp, &lt);
