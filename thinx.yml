@@ -8,3 +8,5 @@ arduino:
   libs:
     - WiFiManager
     - EspSoftwareSerial
+  
+  cd: test
